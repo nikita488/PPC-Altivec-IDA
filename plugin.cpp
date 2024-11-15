@@ -1604,9 +1604,20 @@ static ssize_t idaapi PluginExtensionCallback(void * /*user_data*/, int event_id
 			}
 
 			// Output auto comments
-			if (show_all_comments() && (get_cmt(NULL, ctx->insn.ea, true) == -1))
+#if IDA_SDK_VERSION >= 900
+			if (inf_show_all_comments() &&
+#else
+			if (show_all_comments() &&
+#endif
+          (get_cmt(NULL, ctx->insn.ea, true) == -1))
 			{
-				for (int indentLoop = (int)tag_strlen(ctx->outbuf.c_str()); indentLoop < (inf.comment - inf.indent); indentLoop++)
+				for (int indentLoop = (int)tag_strlen(ctx->outbuf.c_str());
+#if IDA_SDK_VERSION >= 900
+             indentLoop < (inf_get_cmt_indent() - inf_get_indent());
+#else
+             indentLoop < (inf.comment - inf.indent);
+#endif
+             indentLoop++)
 					ctx->out_char(' ');
 				ctx->out_line("# ", COLOR_AUTOCMT);
 				ctx->out_line(g_altivecOpcodes[ctx->insn.itype - altivec_lvebx].description, COLOR_AUTOCMT);
@@ -1683,9 +1694,15 @@ static ssize_t idaapi PluginExtensionCallback(void * /*user_data*/, int event_id
 *
 ***************************************************************************************************/
 
+#if IDA_SDK_VERSION >= 900
+plugmod_t * idaapi PluginStartup(void)
+{
+	if (PH.id != PLFM_PPC)
+#else
 int idaapi PluginStartup(void)
 {
 	if (ph.id != PLFM_PPC)
+#endif
 		return PLUGIN_SKIP;
 
 	// Debug stuff to identify auto-comment status
