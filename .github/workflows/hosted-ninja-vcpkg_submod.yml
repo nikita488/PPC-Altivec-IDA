@@ -19,7 +19,7 @@ on:
     pull_request:
     branches:
     - v11
-    - main
+    - master
   workflow_dispatch:
   schedule:
   - cron: '0 1 * * *'
